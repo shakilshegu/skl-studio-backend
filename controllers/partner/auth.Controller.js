@@ -8,6 +8,7 @@ import BusinessProfile from '../../models/partner/businessInfo.model.js';
 
 const sendOtpPartnerHandler = async (req, res) => {
     try {
+        console.log("HelloMan")
         const { mobileNumber } = req.body
         // Generate a 4-digit numeric OTP
         const otp = otpGenerator.generate(4, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
