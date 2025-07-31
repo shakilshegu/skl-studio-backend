@@ -1,0 +1,130 @@
+In All use cases the services , packages , equipments are not mandatory to add in the cart. If they exist the calulation will be done based on the price and quantity of the items.
+
+
+Test Case 1: Add Hourly Slots to Cart
+Description: Add hourly slots to the cart and calculate the total amount based on the hourly rate and duration.
+
+
+Request:{
+  "userId": "user123",
+  "studioId": "studio123",
+  "slotTiming": {
+    "startTime": "2023-10-01T10:00:00Z",
+    "endTime": "2023-10-01T12:00:00Z"
+  },
+  "slotIds": ["slot1"],
+  "rateType": "hourly"
+}
+Response:
+{
+  "message": "Cart updated successfully",
+  "cartDetails": {
+    "equipmentAmount": 0,
+    "serviceAmount": 0,
+    "packageAmount": 0,
+    "slotAmount": 200,
+    "baseAmount": 200,
+    "gstAmount": 36,
+    "totalAmount": 736,
+    "advanceAmount": 147,
+    "onSiteAmount": 589,
+    "remainingAmount": 736
+  },
+  "cart": {
+    "user": "user123",
+    "studio": "studio123",
+    "slotTiming": {
+      "startTime": "2023-10-01T10:00:00Z",
+      "endTime": "2023-10-01T12:00:00Z"
+    },
+    "slots": ["slot1"],
+    "equipments": [],
+    "services": [],
+    "packages": [],
+    "totalAmount": 736
+  }
+}
+
+
+Test Case 2: Add Daily Slots to Cart
+Description: Add daily slots to the cart and calculate the total amount based on the daily rate.
+Request:
+
+{
+  "userId": "user123",
+  "studioId": "studio123",
+  "slotIds": ["slot1", "slot2"],
+  "rateType": "daily"
+}
+  
+  Response 
+  The response is a JSON object with the following properties:
+  {
+    "message": "Cart updated successfully",
+    "cartDetails": {
+      "equipmentAmount": 0,
+      "serviceAmount": 0,
+      "packageAmount": 0,
+      "slotAmount": 400,
+      "baseAmount": 400,
+      "gstAmount": 72,
+      "totalAmount": 972,
+      "advanceAmount": 194,
+      "onSiteAmount": 778,
+      "remainingAmount": 972
+    },
+    "cart": {
+      "user": "user123",
+      "studio": "studio123",
+      "slots": ["slot1", "slot2"],
+      "equipments": [],
+      "services": [],
+      "packages": [],
+      "totalAmount": 972
+    }
+  }
+
+
+  Test Case 3: Add Equipment to Cart
+Description: Add equipment items to the cart and calculate the total amount based on the equipment price and quantity.
+Request:
+{
+  "userId": "user123",
+  "studioId": "studio123",
+  "slotIds": ["slot1", "slot2"],
+  "rateType": "daily",
+  "equipments": [
+    { "id": "equipment1", "quantity": 2 },
+    { "id": "equipment2", "quantity": 1 }
+  ]
+}
+
+Response : 
+{
+  "message": "Cart updated successfully",
+  "cartDetails": {
+    "equipmentAmount": 300,
+    "serviceAmount": 0,
+    "packageAmount": 0,
+    "slotAmount": 0,
+    "baseAmount": 300,
+    "gstAmount": 54,
+    "totalAmount": 854,
+    "advanceAmount": 171,
+    "onSiteAmount": 683,
+    "remainingAmount": 854
+  },
+  "cart": {
+    "user": "user123",
+    "studio": "studio123",
+    "slotIds": ["slot1", "slot2"],
+    "rateType": "daily" , 
+    "equipments": [
+      { "id": "equipment1", "amount": 100, "quantity": 2 },
+      { "id": "equipment2", "amount": 100, "quantity": 1 }
+    ],
+    "services": [],
+    "packages": [],
+    "totalAmount": 854
+  }
+}
