@@ -35,7 +35,6 @@ async function uploadFile(file, cloudFilePath) {
       Bucket: process.env.S3_BUCKET,
       Key: cloudFilePath,
       Body: fileBuffer,
-      ACL: 'public-read',
     });
 
     await S3.send(command);

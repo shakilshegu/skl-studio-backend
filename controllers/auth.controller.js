@@ -111,7 +111,7 @@ const sendOTPHandler = async (req, res) => {
     );
 
     // Send OTP via SMS
-    await sendOTPMessage(mobileNumber, otp);
+    // await sendOTPMessage(mobileNumber, otp);
 
     return res.status(200).json({
       success: true,
