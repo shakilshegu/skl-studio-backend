@@ -1,42 +1,63 @@
-import Helper from '../../models/partner/helper.Model.js';
-import partnerStudios from "../../models/partner/studio.Model.js";
+import Helper from '../../models/partner/helper.model.js';
+import partnerStudios from "../../models/partner/studio.model.js";
+import { sendResponse } from '../../utils/responseUtils.js';
+import { getEntityId } from '../../utils/roleUtils.js';
 
 // GET all helpers
-export const getHelpers = async (req, res) => {
+export const getHelpersByPartnerId = async (req, res) => {
   try {
-    const helpers = await Helper.find();
-    res.status(200).json(helpers);
+    // Get the entity ID and type (studio or freelancer)
+    const { entityId, entityType } = await getEntityId(req); 
+    // Fetch helpers based on the entity ID
+    const helpers = await Helper.find({ 
+      [`${entityType}Id`]: entityId,
+      isDeleted: false 
+    });
+    
+    if (!helpers.length) {
+      return res.status(200).json({
+        success: true,
+        message: `No Helpers found for this ${entityType}.`,
+        data: []
+      });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      message: "Helpers retrieved successfully.",
+      data: helpers
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch helpers' });
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching helpers",
+      error: error.message
+    });
   }
 };
 
 // POST create a helper
-export const createHelper = async (req, res) => {
+export const addHelperById = async (req, res) => {
   try {
-
-    const userId = req.user._id;
+    const { name, price, description } = req.body;
     
-    const studio = await partnerStudios.findOne({ "owner.userId": userId });
-    if (!studio) {
-      return res.status(404).json({
-        success: false,
-        message: "Studio not found.",
-      });
-    }
-
-
-
-    const { name, description, price } = req.body;
-
-    const newHelper = new Helper({  studioId: studio._id,name, description, price });
-    await newHelper.save();
-
-    res.status(201).json(newHelper);
+    // Get the entity ID and type (studio or freelancer)
+    const { entityId, entityType } = await getEntityId(req);
+    
+    // Create and save the new helper
+    const newHelper = new Helper({
+      name,
+      price,
+      description,
+      [`${entityType}Id`]: entityId, // dynamically set studioId or freelancerId
+    });
+    
+    const savedHelper = await newHelper.save();
+    return sendResponse(res, true, 'Helper added successfully.', savedHelper);
   } catch (error) {
-    console.log(error);
-    
-    res.status(400).json({ message: 'Failed to create helper' });
+    console.error(error.message);
+    return sendResponse(res, false, 'Error adding helper', null, error.message);
   }
 };
 

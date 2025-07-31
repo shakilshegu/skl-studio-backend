@@ -1,49 +1,44 @@
-import Package from "../../models/partner/package.Model.js";
-import { uploadFile } from "../../utils/mediaHelper.js";
+import Package from "../../models/partner/package.model.js";
+import { uploadFile } from "../../utils/media.helper.js";
 import { sendResponse } from "../../utils/responseUtils.js";
-import partnerStudios from "../../models/partner/studio.Model.js";
+import partnerStudios from "../../models/partner/studio.model.js";
+import { getEntityId } from "../../utils/roleUtils.js";
 
-const addPackage = async (req, res) => {
+const addPackageById = async (req, res) => {
   try {
     const { name, price, description } = req.body;
     const file = req.file;
-
-    // 👇 Parse JSON strings to arrays
-    const equipments = JSON.parse(req.body.equipments);
-    const services = JSON.parse(req.body.services);
-
-    const userId = req.user._id;
-    const studio = await partnerStudios.findOne({ "owner.userId": userId });
-    if (!studio) {
-      return res.status(404).json({
-        success: false,
-        message: "Studio not found.",
-      });
-    }
-
-    const photoUrl = await uploadFile(file, `package/${file.filename}`);
     
+    if (!file) {
+      return res.status(400).json({ message: 'Photo is required.' });
+    }
+    
+    // 👇 Parse JSON strings to arrays if they exist
+    const equipments = req.body.equipments ? JSON.parse(req.body.equipments) : [];
+    const services = req.body.services ? JSON.parse(req.body.services) : [];
+    
+    // Get the entity ID and type (studio or freelancer)
+    const { entityId, entityType } = await getEntityId(req);
+    
+    // Upload photo
+    const photoUrl = await uploadFile(file, `packages/${entityId}/${file.filename}`);
+    
+    // Create and save the new package
     const newPackage = new Package({
       name,
       price,
       description,
-      studioId: studio._id,
-      equipments,  // now correctly parsed
+      equipments,
+      services,
       photo: photoUrl,
-      services,    // now correctly parsed
+      [`${entityType}Id`]: entityId, // dynamically set studioId or freelancerId
     });
-
+    
     const savedPackage = await newPackage.save();
-    return sendResponse(res, true, "Package added successfully.", savedPackage);
+    return sendResponse(res, true, 'Package added successfully.', savedPackage);
   } catch (error) {
     console.error(error.message);
-    return sendResponse(
-      res,
-      false,
-      "Error adding package",
-      null,
-      error.message
-    );
+    return sendResponse(res, false, 'Error adding package', null, error.message);
   }
 };
 
@@ -131,7 +126,7 @@ const updatePackage = async (req, res) => {
 
 const deletePackage = async (req, res) => {
   try {
-    const packageId = req.params.id; // Get the package ID from the request params
+    const packageId = req.params.id; 
 
     // Ensure the package exists
     const existingPackage = await Package.findById(packageId);
@@ -158,84 +153,43 @@ const deletePackage = async (req, res) => {
   }
 };
 
-// Fetch all packages for a specific studio
-const getAllPackages = async (req, res) => {
-  try {
-    const { studioId } = req.params; // Get the studio's ID from the request parameters
 
-    if (!studioId) {
-      return res.status(400).json({ message: "Studio ID is required." });
-    }
-
-    const packages = await Package.find({ studioId, isDeleted: false })
-      .populate("equipments")
-      .populate("services"); // Retrieve non-deleted packages for the specified studio
-
-    if (packages.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No packages found for this studio." });
-    }
-
-    return sendResponse(
-      res,
-      true,
-      "Packages retrieved successfully.",
-      packages
-    );
-  } catch (error) {
-    console.error(error.message);
-    return sendResponse(
-      res,
-      false,
-      "Error fetching packages",
-      null,
-      error.message
-    );
-  }
-};
 
 // Fetch all packages for a specific studio
-const getPackagesByStudioId = async (req, res) => {
+const getPackagesByPartnerId = async (req, res) => {
   try {
-    const userId = req.user._id;
-    const studio = await partnerStudios.findOne({ "owner.userId": userId });
-    if (!studio) {
-      return res.status(404).json({
-        success: false,
-        message: "Studio not found.",
-      });
-    }
-    if (!studio._id) {
-      return res.status(400).json({ message: "Studio ID is required." });
-    }
-    const packages = await Package.find({
-      studioId: studio._id,
-      isDeleted: false,
+    // Get the entity ID and type (studio or freelancer)
+    const { entityId, entityType } = await getEntityId(req);
+    
+    // Fetch packages based on the entity ID
+    const packages = await Package.find({ 
+      [`${entityType}Id`]: entityId,
+      isDeleted: false 
     })
       .populate("equipments")
-      .populate("services"); // Retrieve non-deleted packages for the specified studio
-
-    if (packages.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No packages found for this studio." });
+      .populate("services");
+    
+    if (!packages.length) {
+      return res.status(200).json({
+        success: true,
+        message: `No Packages found for this ${entityType}.`,
+        data: []
+      });
     }
-    return sendResponse(
-      res,
-      true,
-      "Packages retrieved successfully.",
-      packages
-    );
+    
+    return res.status(200).json({
+      success: true,
+      message: "Packages retrieved successfully.",
+      data: packages
+    });
+    
   } catch (error) {
     console.error(error.message);
-    return sendResponse(
-      res,
-      false,
-      "Error fetching packages",
-      null,
-      error.message
-    );
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching packages",
+      error: error.message
+    });
   }
 };
 
@@ -291,11 +245,10 @@ const getPackagesByFilter = async (req, res) => {
 };
 
 export {
-  addPackage,
+  addPackageById,
   getPackagesByFilter,
   deletePackage,
   updatePackage,
   getPackageById,
-  getAllPackages,
-  getPackagesByStudioId,
+  getPackagesByPartnerId,
 };

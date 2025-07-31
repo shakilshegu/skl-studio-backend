@@ -1,58 +1,101 @@
-import Equipment from "../../models/partner/equipment.Model.js";
-import partnerStudios from "../../models/partner/studio.Model.js";
-import { getS3FileUrl, uploadFile } from "../../utils/mediaHelper.js";
+import Equipment from "../../models/partner/equipment.model.js";
+import partnerStudios from "../../models/partner/studio.model.js";
+import { getS3FileUrl, uploadFile } from "../../utils/media.helper.js";
 import { sendResponse } from "../../utils/responseUtils.js";
-import { validationResult } from "express-validator";
-import EquipmentCategory from "../../models/partner/equipmentCategory.Model.js";
-import { equipmentCategory } from "../../middleware/validation.middleware.js";
+import { getEntityId } from "../../utils/roleUtils.js";
+// import { validationResult } from "express-validator";
+// import EquipmentCategory from "../../models/partner/equipmentCategory.Model.js";
+// import { equipmentCategory } from "../../middleware/validation.middleware.js";
 
 // Add new equipment
+// const addEquipment = async (req, res) => {
+//   try {
+//     const { category, price, desc, name } = req.body;
+
+
+// let test_category="67f76c5ec82e247878cb6646"
+
+//     const file = req.file;
+//     if (!file) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Photo required",
+//       });
+//     }
+//     const userId = req.user._id;
+//     const studio = await partnerStudios.findOne({ "owner.userId": userId });
+//     if (!studio) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Studio not found.",
+//       });
+//     }
+//     const photoUrl = await uploadFile(file, `equipments/${studio._id}/${file.filename}`);
+//     const equipment = new Equipment({
+//       type:test_category,
+//       name,
+//       price,
+//       description:desc,
+//       photo: photoUrl,
+//       studioId: studio._id,
+//     });
+
+
+//     await equipment.save();
+//    return res.status(201).json(equipment);
+//   } catch (error) {
+//     res.status(400).json({ error: error.message });
+//   }
+// };
+
+
 const addEquipment = async (req, res) => {
   try {
     const { category, price, desc, name } = req.body;
-console.log(req.body,"rrr");
-
-
-let test_category="67f76c5ec82e247878cb6646"
-
     const file = req.file;
+    const test_category = "67f76c5ec82e247878cb6646";
+
     if (!file) {
       return res.status(404).json({
         success: false,
         message: "Photo required",
       });
     }
-    const userId = req.user._id;
-    const studio = await partnerStudios.findOne({ "owner.userId": userId });
-    if (!studio) {
-      return res.status(404).json({
-        success: false,
-        message: "Studio not found.",
-      });
-    }
-    const photoUrl = await uploadFile(file, `equipments/${studio._id}/${file.filename}`);
+
+    // Get the entity ID and type (studio or freelancer)
+    const { entityId, entityType } = await getEntityId(req);
+
+    // Upload the equipment photo
+    const photoUrl = await uploadFile(file, `equipments/${entityId}/${file.filename}`);
+
+    // Create a new equipment entry
     const equipment = new Equipment({
-      type:test_category,
+      type: test_category,
       name,
       price,
-      description:desc,
+      description: desc,
       photo: photoUrl,
-      studioId: studio._id,
+      [`${entityType}Id`]: entityId,  // Dynamic assignment (studioId or freelancerId)
     });
 
-
     await equipment.save();
-   return res.status(201).json(equipment);
+    return res.status(201).json({ success: true, data: equipment });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error(error.message);
+    res.status(400).json({ success: false, error: error.message });
   }
 };
+
+
+
+
 
 // Update Equipment Function
 const updateEquipment = async (req, res) => {
   try {
-    const { equipmentId } = req.params;
-    const { type, name, brand, model, description, studioId } = req.body;
+    const  equipmentId  = req.params.id;
+    
+    const { category, price, desc, name } = req.body;
     const file = req.file;
 
     if (!equipmentId) {
@@ -68,17 +111,17 @@ const updateEquipment = async (req, res) => {
     if (file) {
       const photoUrl = await uploadFile(
         file,
-        `studioEquipment/${file.filename}`
+        `equipment/${file.filename}`
       );
       equipment.photo = photoUrl;
     }
 
-    equipment.type = type || equipment.type;
+   
     equipment.name = name || equipment.name;
-    equipment.brand = brand || equipment.brand;
-    equipment.model = model || equipment.model;
-    equipment.description = description || equipment.description;
-    equipment.studioId = studioId || equipment.studioId;
+    equipment.category = category || equipment.category;
+    equipment.price = price || equipment.price;
+    equipment.description = desc || equipment.description;
+   
 
     const updatedEquipment = await equipment.save();
     return sendResponse(
@@ -118,26 +161,73 @@ const getEquipmentByFilter = async (req, res) => {
   }
 };
 
-const getEquipmentsByStudioId = async (req, res) => {
+// const getEquipmentsByPartnerId = async (req, res) => {
+//   try {
+//     const userId = req.user._id
+//     const studio = await partnerStudios.findOne({ "owner.userId" : userId });
+//     if (!studio) {
+//       return res.status(404).json({ 
+//         success: true,
+//         message: 'Studio not found.' 
+//       });
+//     }
+//     const equipments = await Equipment.find({ studioId:studio._id });
+//     res.status(200).json(equipments);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+
+const getEquipmentsByPartnerId = async (req, res) => {
   try {
-    const userId = req.user._id
-    const studio = await partnerStudios.findOne({ "owner.userId" : userId });
-    if (!studio) {
-      return res.status(404).json({ 
-        success: false,
-        message: 'Studio not found.' 
+    // Get the entity ID and type (studio or freelancer)
+    const { entityId, entityType } = await getEntityId(req);
+
+    // Fetch equipments based on the entity ID
+    const equipments = await Equipment.find({ [`${entityType}Id`]: entityId,isDeleted: false });
+
+    if (!equipments.length) {
+      return res.status(200).json({
+        success: true,
+        message: `No Equipments found for this ${entityType}.`,
+        data: []
       });
-    }
-    const equipments = await Equipment.find({ studioId:studio._id });
-    res.status(200).json(equipments);
+    }    
+
+    res.status(200).json({ success: true, data: equipments });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error.message);
+    res.status(500).json({ success: false, error: error.message });
   }
 };
+const deleteEquipment = async (req, res) => {
+  try {
+    const  equipmentId  = req.params.id;
+
+    // Fetch equipments based on the entity ID
+    const equipment = await Equipment.findById(equipmentId);
+
+        if (!equipment || equipment.isDeleted) {
+          return sendResponse(res, false, 'equipment not found or already deleted', null);
+        }
+
+    equipment.isDeleted = true;
+    await equipment.save();
+    return sendResponse(res, true, 'Equipment deleted successfully', null);  
+
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+
 
 export {
   addEquipment,
   updateEquipment,
+  deleteEquipment,
   getEquipmentByFilter,
-  getEquipmentsByStudioId,
+  getEquipmentsByPartnerId,
 };

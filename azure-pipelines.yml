@@ -1,0 +1,18 @@
+trigger: none
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: SSH@0
+  inputs:
+    sshEndpoint: 'EC2-SSH-Connection'
+    runOptions: 'inline'
+    inline: |
+      echo "✅ Connection successful!"
+      cd /var/www/html
+      pwd
+      ls -la
+      echo "Service status:"
+      sudo systemctl status aloka-web-api
+  displayName: 'Quick connection test'

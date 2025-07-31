@@ -1,13 +1,19 @@
 // models/TeamMember.js
-import  mongoose from 'mongoose'
+import mongoose from 'mongoose';
+
 const Schema = mongoose.Schema;
 
 const teamMemberSchema = new Schema({
-  studioId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'partnerstudios',
-        required: true
-      },
+  entityId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    refPath: 'entityRef' // Reference to virtual field
+  },
+  entityType: {
+    type: String,
+    required: true,
+    enum: ['studio', 'freelancer'] // Human readable values
+  },
   name: {
     type: String,
     required: [true, 'Name is required']
@@ -36,16 +42,28 @@ const teamMemberSchema = new Schema({
     type: String,
     default: '/Assets/partner/TeamMumber.svg'
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
+  isActive: {
+    type: Boolean,
+    default: true
   }
 }, {
-  timestamps: true // This automatically manages createdAt and updatedAt
+  timestamps: true
 });
+
+// Virtual field to map entityType to actual model names for refs
+teamMemberSchema.virtual('entityRef').get(function() {
+  switch (this.entityType) {
+    case 'studio':
+      return 'partnerstudios';
+    case 'freelancer':
+      return 'Freelancer';
+    default:
+      return null;
+  }
+});
+
+// Index for better query performance
+teamMemberSchema.index({ entityId: 1, entityType: 1 });
+teamMemberSchema.index({ email: 1 });
 
 export default mongoose.model('TeamMember', teamMemberSchema);

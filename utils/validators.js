@@ -1,20 +1,9 @@
 // File: utils/validators.js
-
-/**
- * Validates email format
- * @param {string} email - Email to validate
- * @returns {boolean} True if email is valid, false otherwise
- */
 export  const validateEmail = (email) => {
     const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
   };
   
-  /**
-   * Validates password strength
-   * @param {string} password - Password to validate
-   * @returns {Object} Validation result with isValid and message
-   */
   export  const validatePassword = (password) => {
     if (!password || password.length < 8) {
       return {

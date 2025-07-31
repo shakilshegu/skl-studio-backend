@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const ServiceSchema = new mongoose.Schema(
   {
@@ -20,10 +20,20 @@ const ServiceSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     studioId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Studio',
-      required: true,
+      ref: "Studio",
+      required: function () {
+        return !this.freelancerId;
+      },
+    },
+    freelancerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Freelancer",
+      required: function () {
+        return !this.studioId;
+      },
     },
     photo: {
       type: String,
@@ -35,6 +45,21 @@ const ServiceSchema = new mongoose.Schema(
   }
 );
 
-const Service = mongoose.model('Service', ServiceSchema);
+// Add a validation to ensure at least one of studioId or freelancerId is provided
+ServiceSchema.pre("validate", function (next) {
+  if (!this.studioId && !this.freelancerId) {
+    this.invalidate(
+      "studioId",
+      "Either studioId or freelancerId must be provided"
+    );
+    this.invalidate(
+      "freelancerId",
+      "Either studioId or freelancerId must be provided"
+    );
+  }
+  next();
+});
+
+const Service = mongoose.model("Service", ServiceSchema);
 
 export default Service;

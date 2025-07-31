@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const PackageSchema = new mongoose.Schema(
   {
@@ -20,34 +20,59 @@ const PackageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     studioId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Studio',
-      required: true,
+      ref: "Studio",
+      required: function () {
+        return !this.freelancerId;
+      },
     },
-    isDeleted:{
+    freelancerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Freelancer",
+      required: function () {
+        return !this.studioId;
+      },
+    },
+    isDeleted: {
       type: Boolean,
-      default: false
+      default: false,
     },
     equipments: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Equipment', 
+        ref: "Equipment",
       },
     ],
     services: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Service', 
+        ref: "Service",
       },
     ],
   },
- 
+
   {
     timestamps: true,
   }
 );
 
-const Package = mongoose.model('Package', PackageSchema);
+// Add a validation to ensure at least one of studioId or freelancerId is provided
+PackageSchema.pre("validate", function (next) {
+  if (!this.studioId && !this.freelancerId) {
+    this.invalidate(
+      "studioId",
+      "Either studioId or freelancerId must be provided"
+    );
+    this.invalidate(
+      "freelancerId",
+      "Either studioId or freelancerId must be provided"
+    );
+  }
+  next();
+});
+
+const Package = mongoose.model("Package", PackageSchema);
 
 export default Package;

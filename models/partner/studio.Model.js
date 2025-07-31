@@ -34,7 +34,7 @@ const studioSchema = new mongoose.Schema({
     gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
     dateOfBirth: { type: Date, required: true },
   },
-  type: {
+  category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'StudioCategory',
     required: true,

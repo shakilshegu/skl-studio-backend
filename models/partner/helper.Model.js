@@ -16,11 +16,21 @@ const HelperSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-        studioId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Studio',
-          required: true,
+    // user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+     studioId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Studio",
+        required: function () {
+          return !this.freelancerId;
         },
+      },
+      freelancerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Freelancer",
+        required: function () {
+          return !this.studioId;
+        },
+      },
     isDeleted:{
       type: Boolean,
       default: false
@@ -32,7 +42,16 @@ const HelperSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+// Add a validation to ensure at least one of studioId or freelancerId is provided
+HelperSchema.pre('validate', function(next) {
+  if (!this.studioId && !this.freelancerId) {
+    this.invalidate('studioId', 'Either studioId or freelancerId must be provided');
+    this.invalidate('freelancerId', 'Either studioId or freelancerId must be provided');
+  }
+  next();
+});
 
 const Helper = mongoose.model('Helper', HelperSchema);
 
 export default Helper;
+ 
