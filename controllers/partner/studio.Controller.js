@@ -1,13 +1,13 @@
 import { uploadFile } from "../../utils/media.helper.js";
 import { sendResponse } from "../../utils/responseUtils.js";
-import Studio from "../../models/partner/studio.model.js";
+import StudioModel from "../../models/partner/studio.model.js";
 import User from "../../models/user.model.js";
 
 const fetchStudioById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const studio = await Studio.findOne({ _id: id, isDeleted: false });
+    const studio = await StudioModel.findOne({ _id: id, isDeleted: false });
 
     if (!studio) {
       return res.status(404).json({ message: "Studio not found" });
@@ -50,7 +50,7 @@ const fetchStudioByPartnerId = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const studio = await Studio.findOne({ "owner.userId": userId, isDeleted: false }).populate('category');
+    const studio = await StudioModel.findOne({ "owner.userId": userId, isDeleted: false }).populate('category');
 
     return res.status(200).json({
       success: true,
@@ -104,7 +104,7 @@ const addStudioHandler = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     // Check if the user already has a studio
-    const existingStudio = await Studio.findOne({ owner: userId });
+    const existingStudio = await StudioModel.findOne({ owner: userId });
     if (existingStudio) {
       return res.status(400).json({ message: "User already has a studio" });
     }
@@ -192,7 +192,7 @@ const updateStudioHandler = async (req, res) => {
       ownerDateOfBirth,
     } = req.body;
 
-    const existingStudio = await Studio.findById(id);
+    const existingStudio = await StudioModel.findById(id);
     if (!existingStudio) {
       return res.status(404).json({ message: "Studio not found" });
     }
@@ -250,7 +250,7 @@ const updateStudioHandler = async (req, res) => {
       images: uploadedPhotos,
     };
 
-    const updatedStudio = await Studio.findByIdAndUpdate(id, updateData, {
+    const updatedStudio = await StudioModel.findByIdAndUpdate(id, updateData, {
       new: true,
     });
 
@@ -270,12 +270,12 @@ const deleteStudioHandler = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const existingStudio = await Studio.findById(id);
+    const existingStudio = await StudioModel.findById(id);
     if (!existingStudio) {
       return res.status(404).json({ message: "Studio not found" });
     }
 
-    const updatedStudio = await Studio.findByIdAndUpdate(
+    const updatedStudio = await StudioModel.findByIdAndUpdate(
       id,
       { isDeleted: true },
       {
