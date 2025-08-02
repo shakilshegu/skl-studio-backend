@@ -48,6 +48,11 @@ app.get("/api", (req, res) => {
   res.send("API is running...");
 });
 
+app.get("/aloka-api/test", (req, res) => {
+  res.json({ status: "ok" });
+});
+
+
 app.use("/aloka-api", indexRoutes);
 
 // Swagger setup
