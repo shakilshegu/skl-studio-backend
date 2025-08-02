@@ -8,7 +8,14 @@ const ip = process.env.IP
 const port = process.env.PORT
 
 // Enable CORS
-app.use(cors());
+// app.use(cors());
+
+app.use(cors({
+  origin: 'https://web-front-skl-studio.vercel.app',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Swagger definition with bearerAuth security scheme
 const options = {
