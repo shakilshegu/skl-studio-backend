@@ -424,7 +424,7 @@
 
 // controllers/bookingController.js
 import Booking from "../../models/user/booking.model.js";
-import Studio from "../../models/partner/Studio.model.js";
+import Studio from "../../models/partner/studio.model.js";
 import Freelancer from "../../models/partner/freelancer.model.js";
 
 export const getUserBookings = async (req, res) => {

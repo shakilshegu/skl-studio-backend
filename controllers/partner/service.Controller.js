@@ -1,7 +1,7 @@
 import Service from "../../models/partner/service.model.js";
 import { uploadFile } from "../../utils/media.helper.js";
 import { sendResponse } from "../../utils/responseUtils.js";
-import partnerstudios from "../../models/partner/Studio.model.js"
+import partnerstudios from "../../models/partner/studio.model.js"
 import FreelancerModel from "../../models/partner/freelancer.model.js";
 import { getEntityId } from "../../utils/roleUtils.js";
 

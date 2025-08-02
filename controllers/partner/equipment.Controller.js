@@ -1,5 +1,5 @@
 import Equipment from "../../models/partner/equipment.model.js";
-import partnerStudios from "../../models/partner/Studio.model.js";
+import partnerStudios from "../../models/partner/studio.model.js";
 import { getS3FileUrl, uploadFile } from "../../utils/media.helper.js";
 import { sendResponse } from "../../utils/responseUtils.js";
 import { getEntityId } from "../../utils/roleUtils.js";

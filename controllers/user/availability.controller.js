@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import availabilityModel from "../../models/partner/availability.model.js";
-import Studio from "../../models/partner/Studio.model.js";
+import Studio from "../../models/partner/studio.model.js";
 import moment from 'moment';
 import FreelancerModel from "../../models/partner/freelancer.model.js";
 

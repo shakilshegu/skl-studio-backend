@@ -1,5 +1,5 @@
 import Helper from '../../models/partner/helper.model.js';
-import partnerStudios from "../../models/partner/Studio.model.js";
+import partnerStudios from "../../models/partner/studio.model.js";
 import { sendResponse } from '../../utils/responseUtils.js';
 import { getEntityId } from '../../utils/roleUtils.js';
 

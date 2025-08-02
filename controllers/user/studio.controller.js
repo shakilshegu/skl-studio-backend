@@ -3,7 +3,7 @@ import Equipment from "../../models/partner/equipment.model.js";
 import Helper from "../../models/partner/helper.model.js";
 import Package from "../../models/partner/package.model.js";
 import Service from "../../models/partner/service.model.js";
-import Studio from "../../models/partner/Studio.model.js";
+import Studio from "../../models/partner/studio.model.js";
 
 
 const fetchStudioById = async (req, res) => {
