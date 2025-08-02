@@ -1,7 +1,7 @@
 import Package from "../../models/partner/package.model.js";
 import { uploadFile } from "../../utils/media.helper.js";
 import { sendResponse } from "../../utils/responseUtils.js";
-import partnerStudios from "../../models/partner/studio.model.js";
+import partnerStudios from "../../models/partner/Studio.model.js";
 import { getEntityId } from "../../utils/roleUtils.js";
 
 const addPackageById = async (req, res) => {

@@ -1,4 +1,4 @@
-import Studio from "../../models/partner/studio.model.js";
+import Studio from "../../models/partner/Studio.model.js";
 
 /**
  * @desc    Fetch all studios with pagination, filtering and search

@@ -1,5 +1,5 @@
 // utils/roleUtils.js
-import partnerstudios from "../models/partner/studio.model.js";
+import partnerstudios from "../models/partner/Studio.model.js";
 import FreelancerModel from "../models/partner/freelancer.model.js";
 
 export const isStudio = (role) => role === "studio";

@@ -1,6 +1,6 @@
 import { uploadFile } from "../../utils/media.helper.js";
 import { sendResponse } from "../../utils/responseUtils.js";
-import Studio from "../../models/partner/studio.model.js";
+import Studio from "../../models/partner/Studio.model.js";
 import User from "../../models/user.model.js";
 
 const fetchStudioById = async (req, res) => {

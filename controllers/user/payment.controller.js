@@ -1214,7 +1214,7 @@ import Equipment from '../../models/partner/equipment.model.js';
 import Package from '../../models/partner/package.model.js';
 import Helper from '../../models/partner/helper.model.js';
 import Availability from '../../models/partner/availability.model.js';
-import Studio from '../../models/partner/studio.model.js';
+import Studio from '../../models/partner/Studio.model.js';
 import Freelancer from '../../models/partner/freelancer.model.js';
 import mongoose from 'mongoose';
 
