@@ -6,7 +6,7 @@ import {
   fetchStudioById,
   updateStudioHandler,
   deleteStudioHandler,
-} from '../../controllers/partner/studio.Controller.js';
+} from '../../controllers/partner/studio.controller.js';
 import upload from '../../middlewares/multer.js';
 
 const router = express.Router();
