@@ -125,7 +125,7 @@ const addStudioHandler = async (req, res) => {
       }
     }
 
-    const newStudio = new Studio({
+    const newStudio = new StudioModel({
       studioName,
       studioEmail,
       studioLogo: uploadLogo,
