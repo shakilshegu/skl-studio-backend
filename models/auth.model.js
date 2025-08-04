@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
 
 const authSchema = new mongoose.Schema({
-  mobileNumber: {
+  email: {
     type: String,
     required: true,
     unique: true,
     trim: true,
+    lowercase: true,
   },
   otpCode: {
     type: String,

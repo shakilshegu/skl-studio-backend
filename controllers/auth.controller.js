@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import OtpModel from "../models/auth.model.js";
 import otpGenerator from "otp-generator";
 import BusinessProfile from "../models/partner/businessProfile.model.js";
-import { sendOTPMessage } from "../services/auth.service.js";
+import { sendOTPMessage, sendOTPMessageEmail } from "../services/auth.service.js";
 import { validateEmail } from "../utils/validators.js";
 import bcrypt from "bcrypt";
 
@@ -92,8 +92,11 @@ const login = async (req, res) => {
 
 const sendOTPHandler = async (req, res) => {
   try {
-    const { mobileNumber } = req.body;
+    const { email } = req.body;
 
+    if (!email) {
+      return res.status(400).json({ success: false, msg: "Email is required" });
+    }
     // Generate a 4-digit numeric OTP
     const otp = otpGenerator.generate(4, {
       upperCaseAlphabets: false,
@@ -105,13 +108,13 @@ const sendOTPHandler = async (req, res) => {
 
     // Save or update OTP in database
     await OtpModel.findOneAndUpdate(
-      { mobileNumber },
+      { email },
       { otpCode: otp, otpExpiration: new Date(currentDate.getTime()) },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
     // Send OTP via SMS
-    // await sendOTPMessage(mobileNumber, otp);
+    await sendOTPMessageEmail(email, otp);
 
     return res.status(200).json({
       success: true,
@@ -128,10 +131,10 @@ const sendOTPHandler = async (req, res) => {
 
 const verifyOTPHandler = async (req, res) => {
   try {
-    const { mobileNumber, otpCode } = req.body;
+    const { email, otpCode } = req.body;
 
     // Validate input
-    if (!mobileNumber || !otpCode) {
+    if (!email || !otpCode) {
       return res.status(400).json({
         success: false,
         msg: "Mobile number and OTP code are required",
@@ -139,7 +142,7 @@ const verifyOTPHandler = async (req, res) => {
     }
 
     // Find the OTP record for the given mobile number
-    const otpRecord = await OtpModel.findOne({ mobileNumber });
+    const otpRecord = await OtpModel.findOne({ email });
 
     if (!otpRecord) {
       return res.status(404).json({
@@ -162,7 +165,7 @@ const verifyOTPHandler = async (req, res) => {
 
     // Find or create user
     // Note: User model should have "user" as default role
-    let user = await User.findOne({ mobile: mobileNumber });
+    let user = await User.findOne({ email: email });
 
     if (user) {
       // Existing user - just ensure verification
@@ -170,7 +173,7 @@ const verifyOTPHandler = async (req, res) => {
     } else {
       // New user - will get default "user" role from model
       user = new User({
-        mobile: mobileNumber,
+        email: email,
         isVerified: true,
       });
     }
@@ -202,7 +205,7 @@ const verifyOTPHandler = async (req, res) => {
     const token = jwt.sign(
       {
         id: freshUser._id,
-        mobile: mobileNumber,
+        email: email,
         currentRole: roleToReturn,
       },
       process.env.JWT_SECRET,
@@ -233,31 +236,23 @@ const verifyOTPHandler = async (req, res) => {
 
 const updateCredentials = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { mobile, password } = req.body;
     const userId = req.user._id; // User ID from auth middleware
 
     // Validate inputs
-    if (!email || !password) {
+    if (!mobile || !password) {
       return res.status(400).json({
         success: false,
-        error: "Email and password are required",
-      });
-    }
-
-    // Validate email format
-    if (!validateEmail(email)) {
-      return res.status(400).json({
-        success: false,
-        error: "Please provide a valid email address",
+        error: "phoneNumber and password are required",
       });
     }
 
     // Check if email already exists for another user
-    const existingUser = await User.findOne({ email, _id: { $ne: userId } });
+    const existingUser = await User.findOne({ mobile, _id: { $ne: userId } });
     if (existingUser) {
       return res.status(409).json({
         success: false,
-        error: "Email already in use by another account",
+        error: "phoneNumber already in use by another account",
       });
     }
 
@@ -269,7 +264,7 @@ const updateCredentials = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       {
-        email,
+        mobile,
         password: hashedPassword,
         // isEmailVerified: false // Email needs verification
       },
